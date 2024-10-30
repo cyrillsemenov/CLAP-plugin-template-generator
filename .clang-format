@@ -1,0 +1,7 @@
+﻿---
+BasedOnStyle: LLVM
+IndentCaseLabels: "true"
+IndentPPDirectives: AfterHash
+IndentWidth: "4"
+InsertNewlineAtEOF: "true"
+SeparateDefinitionBlocks: Always
