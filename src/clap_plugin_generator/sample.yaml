@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cyrillsemenov/CLAP-plugin-template-generator/refs/heads/main/schema.json
+
+plugin_prefix: my_plugin
+plugin_description:
+  id: com.your-company.YourPlugin
+  name: Plugin Name
+  vendor: Vendor
+  url: https://your-domain.com/your-plugin
+  manual_url: https://your-domain.com/your-plugin/manual
+  support_url: https://your-domain.com/support
+  version: "0.0.1"
+  description: |
+    The plugin description.
+  features:
+    - CLAP_PLUGIN_FEATURE_AUDIO_EFFECT
+params:
+  - name: Volume
+    module: Master
+    min_value: 0
+    max_value: 1
+    default_value: 1
+    pattern: "%.3f"
+audio_ports:
+  input:
+    - name: Stereo in
+      channel_count: 2
+      port_type: CLAP_PORT_MONO
+  output:
+    - name: Stereo out
+      channel_count: 2
+      port_type: CLAP_PORT_MONO
+note_ports:
+  input:
+    - name: MIDI In
+      supported_dialects:
+        - CLAP_NOTE_DIALECT_MIDI
+        - CLAP_NOTE_DIALECT_MIDI2
+        - CLAP_NOTE_DIALECT_MIDI_MPE
+      preferred_dialect: CLAP_NOTE_DIALECT_MIDI
+  output:
+    - name: MIDI Out
