@@ -1,0 +1,8 @@
+{
+  "[jinja-cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "files.associations": {
+    "Makefile.j2": "makefile"
+  }
+}
