@@ -9,8 +9,7 @@ plugin_description:
   manual_url: https://your-domain.com/your-plugin/manual
   support_url: https://your-domain.com/support
   version: "0.0.1"
-  description: |
-    The plugin description.
+  description: The plugin description.
   features:
     - CLAP_PLUGIN_FEATURE_AUDIO_EFFECT
 params:
