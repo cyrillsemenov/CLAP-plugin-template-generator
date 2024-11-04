@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "samuelcolvin.jinjahtml",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "vadimcn.vscode-lldb",
+    "ms-vscode.makefile-tools",
+    "charliermarsh.ruff"
+  ]
+}

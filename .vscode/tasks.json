@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "render",
+      "type": "shell",
+      "command": "uv",
+      "args": ["run", "cli", "render"],
+      "group": { "kind": "none" }
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "make",
+      "args": ["install"],
+      "group": { "kind": "build", "isDefault": true },
+      "options": { "cwd": "${workspaceFolder}/test_src" },
+      "dependsOn": ["render"]
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "run",
+        "validate",
+        "${workspaceFolder}/test_src/build/my_plugin.clap",
+        "2>/dev/null"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "dependsOn": ["build"],
+      "options": { "cwd": "libs/clap-validator" }
+    },
+    {
+      "label": "build_parser",
+      "type": "shell",
+      "command": "clang",
+      "args": [
+        "-v",
+        "-g",
+        "-o",
+        "${workspaceFolder}/utils/build/parse_clap_enums",
+        "${workspaceFolder}/utils/parse_clap_enums.c"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
+}

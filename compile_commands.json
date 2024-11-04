@@ -1,0 +1,52 @@
+[
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/audio_processor.c -o build/src/audio_processor.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/ext/audio_ports.c -o build/src/ext/audio_ports.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/ext/state.c -o build/src/ext/state.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/ext/note_ports.c -o build/src/ext/note_ports.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/ext/params.c -o build/src/ext/params.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/ext/latency.c -o build/src/ext/latency.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/plugin.c -o build/src/plugin.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/params.c -o build/src/params.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/entry.c -o build/src/entry.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  },
+  {
+    "directory": ".",
+    "command": "clang -c test_src/src/event_processor.c -o build/src/event_processor.o -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack -Iinclude -Isrc/include -Ilibs/clap/include -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+    "file": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  }
+]
