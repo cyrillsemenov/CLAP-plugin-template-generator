@@ -1,0 +1,17 @@
+{%- set latency = plugin_extensions | selectattr("extension_id", "equalto", "CLAP_EXT_LATENCY") | first -%}
+//////////////////
+// clap_latency //
+//////////////////
+#include "../plugin.h"
+
+
+uint32_t {{ plugin_prefix }}_latency_get(const clap_plugin_t *plugin) {
+   {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+   return plug->latency;
+}
+
+const clap_plugin_latency_t s_{{ plugin_prefix }}_latency = {
+   .get = {{ plugin_prefix }}_latency_get,
+};
+
+

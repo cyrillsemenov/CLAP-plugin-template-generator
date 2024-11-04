@@ -1,0 +1,87 @@
+# Project Name
+PROJECT_NAME = {{ plugin_prefix }}
+
+ifeq ($(OS),Windows_NT)
+    OS := WINDOWS
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        OS := LINUX
+    else ifeq ($(UNAME_S),Darwin)
+        OS := MACOS
+    else
+        $(error Unknown OS)
+    endif
+endif
+
+ifeq ($(OS),WINDOWS)
+    CC = clang
+    RM = cmd /C del /F /Q
+    MKDIR = mkdir
+    COPY = copy
+else
+    CC = clang
+    RM = rm -f
+    MKDIR = mkdir -p
+    COPY = cp -R
+endif
+
+# Project Directories
+SRC_DIR = src
+BUILD_DIR = build
+LIBS_DIR = ../libs/clap
+
+ifeq ($(OS),MACOS)
+    OUTPUT_DIR = $(BUILD_DIR)/$(PROJECT_NAME).clap/Contents/MacOS
+    SYSROOT = -isysroot $(shell xcrun --show-sdk-path)
+    INSTALL_PATH = ~/Library/Audio/Plug-Ins/CLAP/
+    LDFLAGS = -framework CoreFoundation -framework AppKit -framework CoreGraphics -framework AudioToolbox -framework Cocoa -framework IOKit -framework Carbon -exported_symbols_list $(SRC_DIR)/macos-symbols.txt
+    OUTPUT_FILE = $(OUTPUT_DIR)/$(PROJECT_NAME)
+else ifeq ($(OS),LINUX)
+    OUTPUT_DIR = $(BUILD_DIR)
+    SYSROOT =
+    INSTALL_PATH = ~/.clap/
+    LDFLAGS = -shared -fPIC -Wl,--version-script=$(SRC_DIR)/linux-plug.version -Wl,-z,defs
+    OUTPUT_FILE = $(BUILD_DIR)/$(PROJECT_NAME).clap
+else ifeq ($(OS),WINDOWS)
+    OUTPUT_DIR = $(BUILD_DIR)
+    SYSROOT =
+    INSTALL_PATH = $(ProgramFiles)/Common Files/CLAP/
+    LDFLAGS = -shared -Wl,--out-implib,$(BUILD_DIR)/$(PROJECT_NAME).a -lws2_32 -lwinmm
+    OUTPUT_FILE = $(BUILD_DIR)/$(PROJECT_NAME).clap
+endif
+
+INCLUDE_DIRS = -Iinclude -Isrc/include -I$(LIBS_DIR)/include $(SYSROOT)
+CFLAGS = -fPIC -Wall -Wextra -pedantic -Werror=pragma-pack
+
+# Sources
+SOURCES = $(shell find $(SRC_DIR) -name '*.c')
+OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES))
+
+# Default target
+.PHONY: all clean install
+all: $(OUTPUT_DIR)/$(PROJECT_NAME)
+
+# Clean the build
+clean:
+ifeq ($(OS),WINDOWS)
+	if exist $(BUILD_DIR) $(RM) $(BUILD_DIR)
+else
+	$(RM) -r $(BUILD_DIR)
+endif
+
+# Compile object files
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@$(MKDIR) -p $(dir $@)
+	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE_DIRS)
+
+# Link the final executable as a bundle (for macOS)
+$(OUTPUT_FILE): $(OBJECTS)
+	@$(MKDIR) -p $(OUTPUT_DIR)
+	$(CC) -shared $^ -o $@ $(LDFLAGS)
+
+# Install the built plugin to the appropriate directory
+install: $(OUTPUT_FILE)
+	@echo "Installing $(PROJECT_NAME).clap to ~/Library/Audio/Plug-Ins/CLAP/"
+	@$(MKDIR) -p ~/Library/Audio/Plug-Ins/CLAP/
+	cp -R $(BUILD_DIR)/$(PROJECT_NAME).clap ~/Library/Audio/Plug-Ins/CLAP/

@@ -1,0 +1,63 @@
+{#- Jinja template for a CLAP plugin implementation -#}
+{%- block includes %}
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+
+#if __STDC_VERSION__ >= 201112L && !defined (__STDC_NO_THREADS__) && defined (CLAP_HAS_THREADS_H)
+#   define CLAP_HAS_THREAD
+#   include <threads.h>
+#endif
+
+#include <clap/clap.h>
+{%- endblock %}
+
+{%- block macro_defines %}
+#define OUT_OF_BOUNDS(id, count) ((uint32_t)(id) >= (count))
+{%- endblock %}
+
+static const clap_plugin_descriptor_t s_{{ plugin_prefix }}_desc = {
+    .clap_version = CLAP_VERSION_INIT,
+    .id = "{{ plugin_id }}",
+    .name = "{{ plugin_name }}",
+    .vendor = "{{ plugin_vendor }}",
+    .url = "{{ plugin_url }}",
+    .manual_url = "{{ plugin_manual_url }}",
+    .support_url = "{{ plugin_support_url }}",
+    .version = "{{ plugin_version }}",
+    .description = "{{ plugin_description }}",
+    .features = (const char *[]){ {{ plugin_features|join(', ') }}, NULL },
+};
+
+typedef struct {
+    clap_plugin_t                   plugin;
+    const clap_host_t              *host;
+    const clap_host_latency_t      *host_latency;
+    const clap_host_log_t          *host_log;
+    const clap_host_thread_check_t *host_thread_check;
+    const clap_host_state_t        *host_state;
+
+    uint32_t latency;
+} {{ plugin_prefix }}_t;
+
+{%- if audio_ports %}
+
+{% include "clap/ext/audio_ports.c.j2" %}
+{%- endif %}
+
+{%- if note_ports %}
+
+{% include "clap/ext/note_ports.c.j2" %}
+{%- endif %}
+
+{% include "clap/ext/latency.c.j2" %}
+
+{% include "clap/ext/state.c.j2" %}
+
+{% include "clap/ext/params.c.j2" %}
+
+{% include "clap/plugin.c.j2" %}
+
+{% include "clap/entry.c.j2" %}
+

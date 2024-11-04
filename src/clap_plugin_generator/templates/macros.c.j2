@@ -1,0 +1,18 @@
+{% macro generate_enum(enum_name, items) -%}
+enum {{ plugin_prefix | to_camel }}{{ enum_name }}Enum {
+    {%- for item in items %}
+    {{ plugin_prefix | to_camel }}{{ item.name | to_camel }} = {{ loop.index0 }},
+    {%- endfor %}
+    {{ plugin_prefix | to_camel }}{{ enum_name }}Total,
+};
+{%- endmacro -%}
+
+{% macro get_total(enum_name)%}{{ plugin_prefix | to_camel }}{{ enum_name | to_camel }}Total{%endmacro -%}
+
+{% macro get_enum_name(item) %}{{ plugin_prefix | to_camel }}{{ item | to_camel }}{% endmacro %}
+
+{% macro banner(text) -%}
+///{{ "/" * (text|length) }}///
+// {{ text }} //
+///{{ "/" * (text|length) }}///
+{%- endmacro %}

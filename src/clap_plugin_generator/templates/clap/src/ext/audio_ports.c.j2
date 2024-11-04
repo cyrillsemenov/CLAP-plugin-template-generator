@@ -1,0 +1,53 @@
+{%- from "macros.c.j2" import generate_enum, get_total, get_enum_name with context -%}
+
+{%- set input_ports = "input_audio_ports" -%}
+{%- set output_ports = "output_audio_ports" -%}
+{%- set audio_ports = plugin_extensions | selectattr("extension_id", "equalto", "CLAP_EXT_AUDIO_PORTS") | first -%}
+
+{% macro generate_static_list(list_name, items) -%}
+{{ generate_enum(list_name | to_camel , items) }}
+
+static const clap_audio_port_info_t {{ plugin_prefix }}_{{ list_name }}[] = {
+    {%- for item in items%}
+    {
+        .id = {{ get_enum_name(item.name) }},
+        .name = "{{ item.name }}",
+        .flags = {{ item.flags | join(" | ") | default("0", true) }},
+        .channel_count = {{ item.channel_count | default("0") }},
+        .port_type = {{ item.port_type }},
+        .in_place_pair = {{ item.in_place_pair | default("CLAP_INVALID_ID", true) }},
+    },
+    {%- endfor %}
+};
+{%- endmacro -%}
+/////////////////////////////
+// clap_plugin_audio_ports //
+/////////////////////////////
+#include "../plugin.h"
+
+{{ generate_static_list(input_ports, audio_ports.input) }}
+
+{{ generate_static_list(output_ports, audio_ports.output) }}
+
+inline static uint32_t {{ plugin_prefix }}_audio_ports_count(const clap_plugin_t *plugin, bool is_input) {
+    (void)plugin;
+    return is_input ? {{ get_total(input_ports) }} : {{ get_total(output_ports) }};
+}
+
+static bool {{ plugin_prefix }}_audio_ports_get(const clap_plugin_t *plugin,
+                                    uint32_t index,
+                                    bool is_input,
+                                    clap_audio_port_info_t *info) {
+    if (index >= {{ plugin_prefix }}_audio_ports_count(plugin, is_input))
+        return false;
+    
+    *info = is_input ? {{ plugin_prefix }}_{{ input_ports }}[index] : {{ plugin_prefix }}_{{ output_ports }}[index];
+    return true;
+}
+
+const clap_plugin_audio_ports_t s_{{ plugin_prefix }}_audio_ports = {
+    .count = {{ plugin_prefix }}_audio_ports_count,
+    .get = {{ plugin_prefix }}_audio_ports_get,
+};
+
+

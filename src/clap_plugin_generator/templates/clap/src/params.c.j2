@@ -1,0 +1,42 @@
+{%- set param_list = "params" -%}
+{%- set params = (plugin_extensions | selectattr("extension_id", "equalto", "CLAP_EXT_PARAMS") | first).params -%}
+#include <stdlib.h>
+#include <stdio.h>
+#include "params.h"
+
+static double {{ plugin_prefix }}_default_param_get_value(const struct {{ plugin_prefix }}_param *param) {
+    return ((const {{ plugin_prefix }}_param_t *)param)->value;
+}
+
+static void {{ plugin_prefix }}_default_param_set_value(struct {{ plugin_prefix }}_param *param, double value) {
+    (({{ plugin_prefix }}_param_t *)param)->value = value;
+}
+
+static void {{ plugin_prefix }}_default_param_value_to_text(const char *pattern, double value, char *out_buffer, uint32_t out_buffer_capacity) {
+    snprintf(out_buffer, out_buffer_capacity, pattern, value);
+}
+
+static void {{ plugin_prefix }}_default_param_text_to_value(const char *param_value_text, double *out_value) {
+    char *ptr;
+    *out_value = strtod(param_value_text, &ptr);
+}
+
+static {{ plugin_prefix }}_param_t {{ plugin_prefix }}_{{ param_list }}[] = {
+    {%- for item in params %}
+    {
+        .value = {{ item.default_value }},
+        .modulation = 0,
+        .pattern = "{{ item.pattern | default("%f") }}",
+        .get_value = {{ plugin_prefix }}_default_param_get_value,
+        .set_value = {{ plugin_prefix }}_default_param_set_value,
+        .value_to_text = {{ plugin_prefix }}_default_param_value_to_text,
+        .text_to_value = {{ plugin_prefix }}_default_param_text_to_value,
+
+    },
+    {%- endfor %}
+};
+
+{{ plugin_prefix }}_param_t* {{ plugin_prefix }}_get_param(const uint32_t param_index) {
+    return &{{ plugin_prefix }}_{{ param_list }}[param_index];
+}
+

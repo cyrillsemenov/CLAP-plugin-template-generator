@@ -1,3 +1,6 @@
 [submodule "libs/clap"]
 	path = libs/clap
 	url = https://github.com/free-audio/clap.git
+[submodule "libs/clap-validator"]
+	path = libs/clap-validator
+	url = https://github.com/free-audio/clap-validator.git
