@@ -1,0 +1,42 @@
+{%- set state = plugin_extensions | selectattr("extension_id", "equalto", "CLAP_EXT_STATE") | first -%}
+////////////////
+// clap_state //
+////////////////
+#include "../plugin.h"
+
+bool {{ plugin_prefix }}_state_save(const clap_plugin_t *plugin, const clap_ostream_t *stream) {
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+    {% block state_save -%}
+    bool success = true;
+    for (uint32_t i = 0; i < s_{{ plugin_prefix }}_params.count(plugin); i++) {
+        {{ plugin_prefix }}_param_t *param = plug->get_param(i);
+        double val = param->get_value(param);
+        success &= sizeof(double) == stream->write(stream, &val, sizeof(double));
+    }
+    {%- endblock %}
+    
+    return success;
+}
+
+bool {{ plugin_prefix }}_state_load(const clap_plugin_t *plugin, const clap_istream_t *stream) {
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+    {% block state_load -%}
+    bool success = true;
+    for (uint32_t i = 0; i < s_{{ plugin_prefix }}_params.count(plugin); i++) {
+        double val;
+        success &= sizeof(double) == stream->read(stream, &val, sizeof(double));
+        {{ plugin_prefix }}_param_t *param = plug->get_param(i);
+        param->set_value(param, val);
+    }
+    {%- endblock %}
+    
+    return success;
+}
+
+const clap_plugin_state_t s_{{ plugin_prefix }}_state = {
+    .save = {{ plugin_prefix }}_state_save,
+    .load = {{ plugin_prefix }}_state_load,
+};
+
+
+

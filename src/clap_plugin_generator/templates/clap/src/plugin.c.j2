@@ -1,0 +1,117 @@
+{%- from "macros.c.j2" import banner with context -%}
+{%- set ext_pre = "CLAP_EXT_" -%}
+{{ banner(plugin_prefix) }}
+#include "plugin.h"
+
+static bool {{ plugin_prefix }}_init(const struct clap_plugin *plugin) {
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+
+    plug->get_param = {{ plugin_prefix }}_get_param;
+    
+    const clap_host_t * host = plug->host;
+    plug->host_extension_mask = 0;
+
+{% for ext in host_extensions %}
+    plug->host_{{ ext.extension_id | replace(ext_pre, "", 1) | to_snake }} = (const clap_host_{{ ext.extension_id | replace(ext_pre, "", 1) | to_snake }}_t *)host->get_extension(host, {{ ext.extension_id }});
+    if (!plug->host_{{ ext.extension_id | replace(ext_pre, "", 1) | to_snake }}) {
+        printf("Warning: Host does not support {{ ext.extension_id }}.\n");
+    } else {
+        plug->host_extension_mask |= {{ plugin_prefix | to_camel }}Host{{ ext.extension_id | replace(ext_pre, "", 1) | lower | to_camel }};
+    }
+{%- endfor %}
+
+    plug->latency = 0;
+    plug->sample_rate = 0;
+    plug->min_frames_count = 0;
+    plug->max_frames_count = 0;
+    return true;
+}
+
+static void {{ plugin_prefix }}_destroy(const struct clap_plugin *plugin) {
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+    free(plug);
+}
+
+static bool {{ plugin_prefix }}_activate(const struct clap_plugin *plugin,
+                                         double sample_rate,
+                                         uint32_t min_frames_count,
+                                         uint32_t max_frames_count) {
+    {%- block plugin_activate %}
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+    plug->sample_rate = sample_rate;
+    plug->min_frames_count = min_frames_count;
+    plug->max_frames_count = max_frames_count;
+    {%- endblock %}
+    return true;
+}
+
+static void {{ plugin_prefix }}_deactivate(const struct clap_plugin *plugin) {
+    {%- block plugin_deactivate %}
+    (void)plugin;
+    {%- endblock %}
+}
+
+static bool {{ plugin_prefix }}_start_processing(const struct clap_plugin *plugin) { 
+    {%- block plugin_start_processing %}
+    (void)plugin;
+    {%- endblock %}
+    return true;
+}
+
+static void {{ plugin_prefix }}_stop_processing(const struct clap_plugin *plugin) {
+    {%- block plugin_stop_processing %}
+    (void)plugin;
+    {%- endblock %}
+}
+
+static void {{ plugin_prefix }}_reset(const struct clap_plugin *plugin) {
+    {%- block plugin_reset %}
+    (void)plugin;
+    {%- endblock %}
+}
+
+static const void *{{ plugin_prefix }}_get_extension(const struct clap_plugin *plugin, const char *id) {
+    (void)plugin;
+    {% for ext in plugin_extensions %}
+    if (!strcmp(id, {{ ext.extension_id }}))
+        return &s_{{ plugin_prefix }}_{{ ext.extension_id | replace(ext_pre, "", 1)| to_snake }};
+    {% endfor %}
+    return NULL;
+}
+
+static void {{ plugin_prefix }}_on_main_thread(const struct clap_plugin *plugin) { (void)plugin; }
+
+clap_plugin_t *{{ plugin_prefix }}_create(const clap_host_t *host) {
+    {{ plugin_prefix }}_t *p = calloc(1, sizeof(*p));
+    p->host = host;
+    p->plugin.desc = &s_{{ plugin_prefix }}_desc;
+    p->plugin.plugin_data = p;
+    p->plugin.init = {{ plugin_prefix }}_init;
+    p->plugin.destroy = {{ plugin_prefix }}_destroy;
+    p->plugin.activate = {{ plugin_prefix }}_activate;
+    p->plugin.deactivate = {{ plugin_prefix }}_deactivate;
+    p->plugin.start_processing = {{ plugin_prefix }}_start_processing;
+    p->plugin.stop_processing = {{ plugin_prefix }}_stop_processing;
+    p->plugin.reset = {{ plugin_prefix }}_reset;
+    p->plugin.process = {{ plugin_prefix }}_process;
+    p->plugin.get_extension = {{ plugin_prefix }}_get_extension;
+    p->plugin.on_main_thread = {{ plugin_prefix }}_on_main_thread;
+
+    // Don't call into the host here
+
+    return &p->plugin;
+}
+
+// Event handlers default implementations
+void __attribute__((weak)) {{ plugin_prefix }}_handle_note(my_plugin_t *plug, const clap_event_note_t *event) { (void)plug; (void)event; }
+void __attribute__((weak)) {{ plugin_prefix }}_handle_note_expression(my_plugin_t *plug, const clap_event_note_expression_t *event) { (void)plug; (void)event; }
+void __attribute__((weak)) {{ plugin_prefix }}_handle_param_value(my_plugin_t *plug, const clap_event_param_value_t *event) { (void)plug; (void)event; }
+void __attribute__((weak)) {{ plugin_prefix }}_handle_param_mod(my_plugin_t *plug, const clap_event_param_mod_t *event) { (void)plug; (void)event; }
+void __attribute__((weak)) {{ plugin_prefix }}_handle_param_gesture(my_plugin_t *plug, const clap_event_param_gesture_t *event) { (void)plug; (void)event; }
+void __attribute__((weak)) {{ plugin_prefix }}_handle_transport(my_plugin_t *plug, const clap_event_transport_t *event) { (void)plug; (void)event; }
+void __attribute__((weak)) {{ plugin_prefix }}_handle_midi(my_plugin_t *plug, const clap_event_midi_t *event) { (void)plug; (void)event; }
+void __attribute__((weak)) {{ plugin_prefix }}_handle_midi_sysex(my_plugin_t *plug, const clap_event_midi_sysex_t *event) { (void)plug; (void)event; }
+void __attribute__((weak)) {{ plugin_prefix }}_handle_midi2(my_plugin_t *plug, const clap_event_midi2_t *event) { (void)plug; (void)event; }
+
+
+

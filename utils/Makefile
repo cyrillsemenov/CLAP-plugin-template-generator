@@ -8,7 +8,7 @@ CFLAGS   := -Ofast
 
 SRCDIR   := .
 INCLUDEDIR := ../libs/clap/include
-OUTDIR   := ../type_defs
+OUTDIR   := ../src/clap_plugin_generator/clap_data
 
 PARSE_ENUM         := $(SRCDIR)/parse_clap_enums
 
@@ -19,7 +19,7 @@ EXTENSIONS_OUTPUT  := $(OUTDIR)/clap_extensions.py
 # Header files (generated using find)
 HEADER_FILES := $(shell $(FIND) $(INCLUDEDIR) -type f -name "*.h")
 
-.PHONY: all clean enum definitions extensions
+.PHONY: all clean enum definitions extensions print_extensions
 
 all: enum definitions extensions
 
@@ -47,3 +47,6 @@ $(EXTENSIONS_OUTPUT): $(PARSE_ENUM) $(HEADER_FILES)
 clean:
 	$(RM) $(PARSE_ENUM) $(PARSE_DEFINITIONS) $(PARSE_EXTENSIONS)
 	$(RM) $(ENUM_OUTPUT) $(DEFINITIONS_OUTPUT) $(EXTENSIONS_OUTPUT)
+
+print_extensions:
+	@grep -Roh $(LIBS_DIR)/include/clap/ext/ -E -e 'CLAP_EXT_\w+' | sort | uniq 

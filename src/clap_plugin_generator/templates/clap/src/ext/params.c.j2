@@ -1,0 +1,103 @@
+{%- from "macros.c.j2" import generate_enum, get_total, get_enum_name with context -%}
+
+{%- set param_info = "params_info" -%}
+{%- set param_list = "params" -%}
+{%- set params = (plugin_extensions | selectattr("extension_id", "equalto", "CLAP_EXT_PARAMS") | first).params -%}
+/////////////////
+// clap_params //
+/////////////////
+#include "../plugin.h"
+#include "../params.h"
+
+{{ generate_enum(param_info | to_camel , params) }}
+
+static const clap_param_info_t {{ plugin_prefix }}_{{ param_info }}[] = {
+    {%- for item in params %}
+    {
+        .id = {{ get_enum_name(item.name) }},
+        .name = "{{ item.name }}",
+        .module = "{{ item.module }}",
+        .flags = {{ item.info_flags | join(' | ') | default("0", true) }},
+        .min_value = {{ item.min_value }},
+        .max_value = {{ item.max_value }},
+        .default_value = {{ item.default_value }},
+    },
+    {%- endfor %}
+};
+
+inline static uint32_t {{ plugin_prefix }}_params_count(const clap_plugin_t *plugin) {
+    (void)plugin;
+    return {{ get_total(param_info) }};
+}
+
+static bool {{ plugin_prefix }}_params_get_info(const clap_plugin_t *plugin,
+                                                uint32_t param_index,
+                                                clap_param_info_t *param_info) {
+    if(param_index >= {{ plugin_prefix }}_params_count(plugin)) return false;
+    
+    *param_info = {{ plugin_prefix }}_params_info[param_index];
+    return true;
+}
+
+static bool {{ plugin_prefix }}_params_get_value(const clap_plugin_t *plugin, clap_id param_id, double *out_value) {
+    if((uint32_t)param_id >= {{ plugin_prefix }}_params_count(plugin)) return false;
+    
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+    const {{ plugin_prefix }}_param_t *param = plug->get_param(param_id);
+    if (!param) return false;
+    *out_value = param->get_value(param);
+    return true;
+}
+
+static bool {{ plugin_prefix }}_params_value_to_text(const clap_plugin_t *plugin, clap_id param_id, double value, char *out_buffer, uint32_t out_buffer_capacity) {
+    if((uint32_t)param_id >= {{ plugin_prefix }}_params_count(plugin)) return false;
+    
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+    const {{ plugin_prefix }}_param_t *param = plug->get_param(param_id);
+    if (!param) return false;
+    param->value_to_text(param->pattern, value, out_buffer, out_buffer_capacity);
+    return true;
+}
+
+static bool {{ plugin_prefix }}_params_text_to_value(const clap_plugin_t *plugin, clap_id param_id, const char *param_value_text, double *out_value) {
+    if((uint32_t)param_id >= {{ plugin_prefix }}_params_count(plugin)) return false;
+    
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+    const {{ plugin_prefix }}_param_t *param = plug->get_param(param_id);
+    if (!param) return false;
+    param->text_to_value(param_value_text, out_value);
+    return true;
+}
+
+static void {{ plugin_prefix }}_params_flush(const clap_plugin_t *plugin, const clap_input_events_t *in, const clap_output_events_t *out) {
+    (void)out;
+    if (in == NULL) return;
+    {{ plugin_prefix }}_t *plug = plugin->plugin_data;
+    for (uint32_t i = 0; i < in->size(in); ++i) {
+        const clap_event_header_t *event = in->get(in, i);
+        if (event->type == CLAP_EVENT_PARAM_VALUE) {
+            const clap_event_param_value_t *param_event = (const clap_event_param_value_t *)event;
+            if (param_event->param_id >= {{ plugin_prefix }}_params_count(plugin)) {
+                printf("Invalid parameter ID: %u\n", param_event->param_id);
+                continue;
+            }
+            
+            {{ plugin_prefix }}_param_t *param = plug->get_param(param_event->param_id);
+            if (param) {
+                param->set_value(param, param_event->value);
+            } else {
+                printf("Failed to get parameter for ID: %u\n", param_event->param_id);
+            }
+        }
+    }
+}
+
+const clap_plugin_params_t s_{{ plugin_prefix }}_params = {
+    .count = {{ plugin_prefix }}_params_count,
+    .get_info = {{ plugin_prefix }}_params_get_info,
+    .get_value = {{ plugin_prefix }}_params_get_value,
+    .value_to_text = {{ plugin_prefix }}_params_value_to_text,
+    .text_to_value = {{ plugin_prefix }}_params_text_to_value,
+    .flush = {{ plugin_prefix }}_params_flush,
+};
+

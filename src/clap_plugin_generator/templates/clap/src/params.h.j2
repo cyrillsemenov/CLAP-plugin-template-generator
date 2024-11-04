@@ -1,0 +1,15 @@
+#pragma once
+#include <stdint.h>
+
+typedef struct {{ plugin_prefix }}_param {
+    double value;
+    double modulation;
+    const char* pattern;
+    double(*get_value)(const struct {{ plugin_prefix }}_param *param);
+    void(*set_value)(struct {{ plugin_prefix }}_param *param, double value);
+    void(*value_to_text)(const char *pattern, double value, char *out_buffer, uint32_t out_buffer_capacity);
+    void(*text_to_value)(const char *param_value_text, double *out_value);
+} {{ plugin_prefix }}_param_t;
+
+{{ plugin_prefix }}_param_t* {{ plugin_prefix }}_get_param(const uint32_t param_index);
+

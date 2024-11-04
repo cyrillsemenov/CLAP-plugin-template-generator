@@ -1,0 +1,484 @@
+{
+  "$defs": {
+    "AudioPort": {
+      "description": "Represents an audio port, with properties such as:\n- `name`: The display name of the audio port.\n- `flags`: A list of flags indicating specific behaviors or requirements (e.g., main port).\n- `channel_count`: Number of channels (e.g., 0, 1, 2).\n- `port_type`: Type of the port (e.g., mono, stereo).\n- `in_place_pair`: Identifier for in-place processing support.\n\nClass Methods:\n- `stereo_in()`: Creates a stereo input port.\n- `stereo_out()`: Creates a stereo output port.\n- `mono_in()`: Creates a mono input port.\n- `mono_out()`: Creates a mono output port.",
+      "properties": {
+        "name": {
+          "description": "displayable name",
+          "examples": [
+            "Stereo"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "flags": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/ClapAudioPort"
+              },
+              "type": "array"
+            }
+          ],
+          "examples": [
+            0
+          ],
+          "title": "Flags"
+        },
+        "channel_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "examples": [
+            2
+          ],
+          "title": "Channel Count"
+        },
+        "port_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClapAudioPortType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "If null or empty then it is unspecified (arbitrary audio).\nThis field can be compared against:\n- CLAP_PORT_MONO\n- CLAP_PORT_STEREO\n- CLAP_PORT_SURROUND (defined in the surround extension)\n- CLAP_PORT_AMBISONIC (defined in the ambisonic extension)\n\nAn extension can provide its own port type and way to inspect the channels.\n",
+          "examples": [
+            "CLAP_PORT_STEREO"
+          ]
+        },
+        "in_place_pair": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "in-place processing: allow the host to use the same buffer for input and output\nif supported set the pair port id.\nif not supported set to CLAP_INVALID_ID\n",
+          "examples": [
+            "CLAP_INVALID_ID"
+          ],
+          "title": "In Place Pair"
+        }
+      },
+      "required": [
+        "name",
+        "channel_count",
+        "port_type"
+      ],
+      "title": "AudioPort",
+      "type": "object"
+    },
+    "AudioPorts": {
+      "description": "Represents a collection of audio ports, including:\n- `input`: A list of input audio ports.\n- `output`: A list of output audio ports.",
+      "properties": {
+        "input": {
+          "items": {
+            "$ref": "#/$defs/AudioPort"
+          },
+          "title": "Input",
+          "type": "array"
+        },
+        "output": {
+          "items": {
+            "$ref": "#/$defs/AudioPort"
+          },
+          "title": "Output",
+          "type": "array"
+        }
+      },
+      "title": "AudioPorts",
+      "type": "object"
+    },
+    "ClapAudioPort": {
+      "description": "File: ../libs/clap/include/clap/ext/audio-ports.h",
+      "enum": [
+        "CLAP_AUDIO_PORT_IS_MAIN",
+        "CLAP_AUDIO_PORT_SUPPORTS_64BITS",
+        "CLAP_AUDIO_PORT_PREFERS_64BITS",
+        "CLAP_AUDIO_PORT_REQUIRES_COMMON_SAMPLE_SIZE"
+      ],
+      "title": "ClapAudioPort",
+      "type": "string"
+    },
+    "ClapAudioPortType": {
+      "description": "CLAP audio port types",
+      "enum": [
+        "CLAP_PORT_SURROUND",
+        "CLAP_PORT_AMBISONIC",
+        "CLAP_PORT_MONO",
+        "CLAP_PORT_STEREO"
+      ],
+      "title": "ClapAudioPortType",
+      "type": "string"
+    },
+    "ClapNoteDialect": {
+      "description": "File: ../libs/clap/include/clap/ext/note-ports.h",
+      "enum": [
+        "CLAP_NOTE_DIALECT_CLAP",
+        "CLAP_NOTE_DIALECT_MIDI",
+        "CLAP_NOTE_DIALECT_MIDI_MPE",
+        "CLAP_NOTE_DIALECT_MIDI2"
+      ],
+      "title": "ClapNoteDialect",
+      "type": "string"
+    },
+    "ClapParam": {
+      "description": "File: ../libs/clap/include/clap/ext/params.h",
+      "enum": [
+        "CLAP_PARAM_IS_STEPPED",
+        "CLAP_PARAM_IS_PERIODIC",
+        "CLAP_PARAM_IS_HIDDEN",
+        "CLAP_PARAM_IS_READONLY",
+        "CLAP_PARAM_IS_BYPASS",
+        "CLAP_PARAM_IS_AUTOMATABLE",
+        "CLAP_PARAM_IS_AUTOMATABLE_PER_NOTE_ID",
+        "CLAP_PARAM_IS_AUTOMATABLE_PER_KEY",
+        "CLAP_PARAM_IS_AUTOMATABLE_PER_CHANNEL",
+        "CLAP_PARAM_IS_AUTOMATABLE_PER_PORT",
+        "CLAP_PARAM_IS_MODULATABLE",
+        "CLAP_PARAM_IS_MODULATABLE_PER_NOTE_ID",
+        "CLAP_PARAM_IS_MODULATABLE_PER_KEY",
+        "CLAP_PARAM_IS_MODULATABLE_PER_CHANNEL",
+        "CLAP_PARAM_IS_MODULATABLE_PER_PORT",
+        "CLAP_PARAM_REQUIRES_PROCESS",
+        "CLAP_PARAM_IS_ENUM"
+      ],
+      "title": "ClapParam",
+      "type": "string"
+    },
+    "ClapPluginFeatures": {
+      "enum": [
+        "CLAP_PLUGIN_FEATURE_INSTRUMENT",
+        "CLAP_PLUGIN_FEATURE_AUDIO_EFFECT",
+        "CLAP_PLUGIN_FEATURE_NOTE_EFFECT",
+        "CLAP_PLUGIN_FEATURE_NOTE_DETECTOR",
+        "CLAP_PLUGIN_FEATURE_ANALYZER",
+        "CLAP_PLUGIN_FEATURE_SYNTHESIZER",
+        "CLAP_PLUGIN_FEATURE_SAMPLER",
+        "CLAP_PLUGIN_FEATURE_DRUM",
+        "CLAP_PLUGIN_FEATURE_DRUM_MACHINE",
+        "CLAP_PLUGIN_FEATURE_FILTER",
+        "CLAP_PLUGIN_FEATURE_PHASER",
+        "CLAP_PLUGIN_FEATURE_EQUALIZER",
+        "CLAP_PLUGIN_FEATURE_DEESSER",
+        "CLAP_PLUGIN_FEATURE_PHASE_VOCODER",
+        "CLAP_PLUGIN_FEATURE_GRANULAR",
+        "CLAP_PLUGIN_FEATURE_FREQUENCY_SHIFTER",
+        "CLAP_PLUGIN_FEATURE_PITCH_SHIFTER",
+        "CLAP_PLUGIN_FEATURE_DISTORTION",
+        "CLAP_PLUGIN_FEATURE_TRANSIENT_SHAPER",
+        "CLAP_PLUGIN_FEATURE_COMPRESSOR",
+        "CLAP_PLUGIN_FEATURE_EXPANDER",
+        "CLAP_PLUGIN_FEATURE_GATE",
+        "CLAP_PLUGIN_FEATURE_LIMITER",
+        "CLAP_PLUGIN_FEATURE_FLANGER",
+        "CLAP_PLUGIN_FEATURE_CHORUS",
+        "CLAP_PLUGIN_FEATURE_DELAY",
+        "CLAP_PLUGIN_FEATURE_REVERB",
+        "CLAP_PLUGIN_FEATURE_TREMOLO",
+        "CLAP_PLUGIN_FEATURE_GLITCH",
+        "CLAP_PLUGIN_FEATURE_UTILITY",
+        "CLAP_PLUGIN_FEATURE_PITCH_CORRECTION",
+        "CLAP_PLUGIN_FEATURE_RESTORATION",
+        "CLAP_PLUGIN_FEATURE_MULTI_EFFECTS",
+        "CLAP_PLUGIN_FEATURE_MIXING",
+        "CLAP_PLUGIN_FEATURE_MASTERING",
+        "CLAP_PLUGIN_FEATURE_MONO",
+        "CLAP_PLUGIN_FEATURE_STEREO",
+        "CLAP_PLUGIN_FEATURE_SURROUND",
+        "CLAP_PLUGIN_FEATURE_AMBISONIC"
+      ],
+      "title": "ClapPluginFeatures",
+      "type": "string"
+    },
+    "NotePort": {
+      "description": "Represents a note port, with properties such as:\n- `name`: The display name of the note port.\n- `supported_dialects`: A list of supported note dialects (e.g., MIDI, CLAP).\n- `preferred_dialect`: Preferred note dialect for communication.\n\nClass Methods:\n- `midi_in()`: Creates a MIDI input note port.\n- `midi_out()`: Creates a MIDI output note port.",
+      "properties": {
+        "name": {
+          "description": "displayable name",
+          "title": "Name",
+          "type": "string"
+        },
+        "supported_dialects": {
+          "default": [
+            "CLAP_NOTE_DIALECT_MIDI"
+          ],
+          "description": "bitfield, see clap_note_dialect",
+          "examples": [
+            [
+              "CLAP_NOTE_DIALECT_MIDI"
+            ]
+          ],
+          "items": {
+            "$ref": "#/$defs/ClapNoteDialect"
+          },
+          "title": "Supported Dialects",
+          "type": "array"
+        },
+        "preferred_dialect": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClapNoteDialect"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "One value of clap_note_dialect. By default the first member of supported_dialects list.",
+          "examples": [
+            "CLAP_NOTE_DIALECT_MIDI"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "NotePort",
+      "type": "object"
+    },
+    "NotePorts": {
+      "description": "Represents a collection of note ports, including:\n- `input`: A list of input note ports.\n- `output`: A list of output note ports.",
+      "properties": {
+        "input": {
+          "items": {
+            "$ref": "#/$defs/NotePort"
+          },
+          "title": "Input",
+          "type": "array"
+        },
+        "output": {
+          "items": {
+            "$ref": "#/$defs/NotePort"
+          },
+          "title": "Output",
+          "type": "array"
+        }
+      },
+      "title": "NotePorts",
+      "type": "object"
+    },
+    "ParamInfo": {
+      "description": "Represents information about a parameter, including:\n- `name`: Name of the parameter.\n- `module`: Module that the parameter belongs to.\n- `info_flags`: Flags that represent additional information about the parameter.\n- `min_value`: Minimum value for the parameter.\n- `max_value`: Maximum value for the parameter.\n- `default_value`: Default value of the parameter.\n- `pattern`: Optional pattern for formatting the parameter value.",
+      "properties": {
+        "name": {
+          "description": "The display name. eg: \"Volume\". This does not need to be unique. Do not include the module\ntext in this. The host should concatenate/format the module + name in the case where showing\nthe name alone would be too vague.\n",
+          "examples": [
+            "Volume"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "module": {
+          "description": "The module path containing the param, eg: \"Oscillators/Wavetable 1\".\n'/' will be used as a separator to show a tree-like structure.\n",
+          "examples": "VCA",
+          "title": "Module",
+          "type": "string"
+        },
+        "info_flags": {
+          "items": {
+            "$ref": "#/$defs/ClapParam"
+          },
+          "title": "Info Flags",
+          "type": "array"
+        },
+        "min_value": {
+          "description": "Minimum plain value",
+          "examples": [
+            0
+          ],
+          "title": "Min Value",
+          "type": "number"
+        },
+        "max_value": {
+          "description": "Maximum plain value",
+          "examples": [
+            1
+          ],
+          "title": "Max Value",
+          "type": "number"
+        },
+        "default_value": {
+          "description": "Default plain value",
+          "examples": [
+            1
+          ],
+          "title": "Default Value",
+          "type": "number"
+        },
+        "pattern": {
+          "examples": [
+            "Val: %f"
+          ],
+          "pattern": ".*%([-+#0])?(\\d+|\\*)?(?:\\.(\\d+|\\*))?([hljztL]|hh|ll)?[diuoxXfFeEgGaAcspn].*",
+          "title": "Pattern",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "module",
+        "min_value",
+        "max_value",
+        "default_value",
+        "pattern"
+      ],
+      "title": "ParamInfo",
+      "type": "object"
+    },
+    "PluginDescriptor": {
+      "description": "Mandatory fields must be set and must not be blank.\nOtherwise the fields can be null or blank, though it is safer to make them blank.\n\nSome indications regarding id and version\n- id is an arbitrary string which should be unique to your plugin,\n  we encourage you to use a reverse URI eg: \"com.u-he.diva\"\n- version is an arbitrary string which describes a plugin,\n  it is useful for the host to understand and be able to compare two different\n  version strings, so here is a regex like expression which is likely to be\n  understood by most hosts: MAJOR(.MINOR(.REVISION)?)?( (Alpha|Beta) XREV)?",
+      "properties": {
+        "id": {
+          "examples": [
+            "com.your-company.YourPlugin"
+          ],
+          "pattern": "\\S+\\.\\S+\\.\\S+",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "examples": [
+            "Plugin Name"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "vendor": {
+          "examples": [
+            "Vendor"
+          ],
+          "title": "Vendor",
+          "type": "string"
+        },
+        "url": {
+          "examples": [
+            "https://your-domain.com/your-plugin"
+          ],
+          "format": "uri",
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        },
+        "manual_url": {
+          "examples": [
+            "https://your-domain.com/your-plugin/manual"
+          ],
+          "format": "uri",
+          "minLength": 1,
+          "title": "Manual Url",
+          "type": "string"
+        },
+        "support_url": {
+          "examples": [
+            "https://your-domain.com/support"
+          ],
+          "format": "uri",
+          "minLength": 1,
+          "title": "Support Url",
+          "type": "string"
+        },
+        "version": {
+          "examples": [
+            "1.4.2"
+          ],
+          "pattern": "\\d+(\\.\\d+(\\.\\d+)?)?( ?\\w+)?",
+          "title": "Version",
+          "type": "string"
+        },
+        "description": {
+          "examples": [
+            "The plugin description."
+          ],
+          "title": "Description",
+          "type": "string"
+        },
+        "features": {
+          "description": "Arbitrary list of keywords.\nThey can be matched by the host indexer and used to classify the plugin.\nThe array of pointers must be null terminated.\nFor some standard features see plugin-features.h",
+          "items": {
+            "$ref": "#/$defs/ClapPluginFeatures"
+          },
+          "title": "Features",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "vendor",
+        "url",
+        "manual_url",
+        "support_url",
+        "version",
+        "description"
+      ],
+      "title": "PluginDescriptor",
+      "type": "object"
+    }
+  },
+  "description": "Represents the metadata and configuration of a plugin.",
+  "properties": {
+    "plugin_prefix": {
+      "description": "prefix for plugin used in a code",
+      "examples": [
+        "my_plugin"
+      ],
+      "pattern": "[a-zA-Z_]+",
+      "title": "Plugin Prefix",
+      "type": "string"
+    },
+    "plugin_description": {
+      "$ref": "#/$defs/PluginDescriptor"
+    },
+    "params": {
+      "examples": [
+        {
+          "default_value": 0.5,
+          "info_flags": [],
+          "max_value": 1.0,
+          "min_value": 0.0,
+          "module": "dynamics",
+          "name": "gain",
+          "pattern": "%.2f"
+        }
+      ],
+      "items": {
+        "$ref": "#/$defs/ParamInfo"
+      },
+      "title": "Params",
+      "type": "array"
+    },
+    "audio_ports": {
+      "$ref": "#/$defs/AudioPorts"
+    },
+    "note_ports": {
+      "$ref": "#/$defs/NotePorts"
+    }
+  },
+  "required": [
+    "plugin_prefix",
+    "plugin_description",
+    "params",
+    "audio_ports",
+    "note_ports"
+  ],
+  "title": "PluginData",
+  "type": "object"
+}

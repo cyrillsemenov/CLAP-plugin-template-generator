@@ -1,0 +1,167 @@
+{%- from "macros.c.j2" import banner with context -%}
+{{ banner(plugin_prefix+"_event_processor") }}
+#include "plugin.h"
+#include "params.h"
+
+static void {{ plugin_prefix }}_handle_note(my_plugin_t *plug, const clap_event_note_t *event) {
+    (void)plug;
+    switch (event->header.type) {
+        case CLAP_EVENT_NOTE_ON: {
+            // TODO: handle note on
+            break;
+        }
+
+        case CLAP_EVENT_NOTE_OFF: {
+            // TODO: handle note off
+            break;
+        }
+
+        case CLAP_EVENT_NOTE_CHOKE: {
+            // TODO: handle note choke
+            break;
+        }
+
+        case CLAP_EVENT_NOTE_END: {
+            // TODO: handle note end
+            break;
+        }
+    }
+}
+
+void {{ plugin_prefix }}_handle_note_expression(my_plugin_t *plug, const clap_event_note_expression_t *event) {
+    (void)plug;
+    switch(event->expression_id) {
+        case CLAP_NOTE_EXPRESSION_VOLUME: {
+            // with 0 < x <= 4, plain = 20 * log(x)
+            break;
+        }
+
+        case CLAP_NOTE_EXPRESSION_PAN: {
+            // pan, 0 left, 0.5 center, 1 right
+            break;
+        }
+
+        case CLAP_NOTE_EXPRESSION_TUNING: {
+            // Relative tuning in semitones, from -120 to +120. Semitones are in
+            // equal temperament and are doubles; the resulting note would be
+            // retuned by `100 * evt->value` cents.
+            break;
+        }
+
+        // 0..1
+        case CLAP_NOTE_EXPRESSION_VIBRATO: {
+            break;
+        }
+        case CLAP_NOTE_EXPRESSION_EXPRESSION: {
+            break;
+        }
+        case CLAP_NOTE_EXPRESSION_BRIGHTNESS: {
+            break;
+        }
+        case CLAP_NOTE_EXPRESSION_PRESSURE: {
+            break;
+        }
+    }
+}
+
+static void {{ plugin_prefix }}_handle_param_value(my_plugin_t *plug, const clap_event_param_value_t *event) {
+    (void)plug;
+    (void)event;
+    {{ plugin_prefix }}_param_t *param = {{ plugin_prefix }}_get_param(event->param_id);
+    param->set_value(param, event->value);
+}
+
+static void {{ plugin_prefix }}_handle_param_mod(my_plugin_t *plug, const clap_event_param_mod_t *event) {
+    (void)plug;
+    (void)event;
+    // {{ plugin_prefix }}_param_t *param = &{{ plugin_prefix }}_{{ param_list }}(event->param_id);
+    // param->modulate(param, event->amount);
+}
+
+static void {{ plugin_prefix }}_handle_param_gesture(my_plugin_t *plug, const clap_event_param_gesture_t *event) {
+    (void)plug;
+    switch (event->header.type) {
+        case CLAP_EVENT_PARAM_GESTURE_BEGIN: {
+            // TODO: handle gesture begin
+            break;
+        }
+
+        case CLAP_EVENT_PARAM_GESTURE_END: {
+            // TODO: handle gesture end
+            break;
+        }
+
+    }
+}
+
+static void {{ plugin_prefix }}_handle_transport(my_plugin_t *plug, const clap_event_transport_t *event) { (void)plug; (void)event; }
+static void {{ plugin_prefix }}_handle_midi(my_plugin_t *plug, const clap_event_midi_t *event) { (void)plug; (void)event; }
+static void {{ plugin_prefix }}_handle_midi_sysex(my_plugin_t *plug, const clap_event_midi_sysex_t *event) { (void)plug; (void)event; }
+static void {{ plugin_prefix }}_handle_midi2(my_plugin_t *plug, const clap_event_midi2_t *event) { (void)plug; (void)event; }
+
+void {{ plugin_prefix }}_process_event({{ plugin_prefix }}_t *plug, const clap_event_header_t *hdr) {
+    if (hdr->space_id == CLAP_CORE_EVENT_SPACE_ID) {
+        switch (hdr->type) {
+            case CLAP_EVENT_NOTE_ON: {
+                {{ plugin_prefix }}_handle_note(plug, (const clap_event_note_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_NOTE_OFF: {
+                {{ plugin_prefix }}_handle_note(plug, (const clap_event_note_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_NOTE_CHOKE: {
+                {{ plugin_prefix }}_handle_note(plug, (const clap_event_note_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_NOTE_EXPRESSION: {
+                {{ plugin_prefix }}_handle_note_expression(plug, (const clap_event_note_expression_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_PARAM_VALUE: {
+                {{ plugin_prefix }}_handle_param_value(plug, (const clap_event_param_value_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_PARAM_GESTURE_BEGIN: {
+                {{ plugin_prefix }}_handle_param_gesture(plug, (const clap_event_param_gesture_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_PARAM_GESTURE_END: {
+                {{ plugin_prefix }}_handle_param_gesture(plug, (const clap_event_param_gesture_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_PARAM_MOD: {
+                {{ plugin_prefix }}_handle_param_mod(plug, (const clap_event_param_mod_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_TRANSPORT: {
+                {{ plugin_prefix }}_handle_transport(plug, (const clap_event_transport_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_MIDI: {
+                {{ plugin_prefix }}_handle_midi(plug, (const clap_event_midi_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_MIDI_SYSEX: {
+                {{ plugin_prefix }}_handle_midi_sysex(plug, (const clap_event_midi_sysex_t *)hdr);
+                break;
+            }
+
+            case CLAP_EVENT_MIDI2: {
+                {{ plugin_prefix }}_handle_midi2(plug, (const clap_event_midi2_t *)hdr);
+                break;
+            }
+        }
+    }
+}
+

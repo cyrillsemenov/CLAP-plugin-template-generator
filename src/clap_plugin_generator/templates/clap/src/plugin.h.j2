@@ -1,0 +1,75 @@
+{%- set ext_pre = "CLAP_EXT_" -%}
+#pragma once
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#if __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_THREADS__) &&            \
+    defined(CLAP_HAS_THREADS_H)
+#    define CLAP_HAS_THREAD
+#    include <threads.h>
+#endif
+
+#include <clap/clap.h>
+
+#include "params.h"
+
+{% for ext in host_extensions %}
+#define HOST_{{ ext.extension_id | replace(ext_pre, "", 1) | to_screaming_snake }}(plug) \
+    if (plug->host_extension_mask & {{ plugin_prefix | to_camel }}Host{{ ext.extension_id | replace(ext_pre, "", 1) | lower | to_camel }}) \
+        plug->host_{{ ext.extension_id | replace(ext_pre, "", 1) | to_snake }}
+{%- endfor %}
+
+static const clap_plugin_descriptor_t s_{{ plugin_prefix }}_desc = {
+    .clap_version = CLAP_VERSION_INIT,
+    .id = "{{ plugin_description.id }}",
+    .name = "{{ plugin_description.name }}",
+    .vendor = "{{ plugin_description.vendor }}",
+    .url = "{{ plugin_description.url }}",
+    .manual_url = "{{ plugin_description.manual_url }}",
+    .support_url = "{{ plugin_description.support_url }}",
+    .version = "{{ plugin_description.version }}",
+    .description = "{{ plugin_description.description }}",
+    .features = (const char *[]){
+{%- for feature in plugin_description.features %}
+        {{ feature }},
+{%- endfor %}
+        NULL
+    },
+};
+
+typedef struct {
+    clap_plugin_t plugin;
+
+    {{ plugin_prefix }}_param_t*(*get_param)(const uint32_t param_index);
+
+    const clap_host_t *host;
+
+{%- for ext in host_extensions %}
+    const clap_host_{{ ext.extension_id | replace(ext_pre, "", 1) | to_snake }}_t *host_{{ ext.extension_id | replace(ext_pre, "", 1) | to_snake }};
+{%- endfor %}
+    uint32_t host_extension_mask;
+
+    uint32_t latency;
+    double sample_rate;
+    uint32_t min_frames_count;
+    uint32_t max_frames_count;
+} {{ plugin_prefix }}_t;
+
+enum {{ plugin_prefix | to_camel }}HostExtEnum {
+{%- for ext in host_extensions %}
+    {{ plugin_prefix | to_camel }}Host{{ ext.extension_id | replace(ext_pre, "", 1) | lower | to_camel }} = 1 << {{ loop.index0 }},
+{%- endfor %}
+    {{ plugin_prefix | to_camel }}HostExtTotal,
+};
+
+clap_plugin_t *{{ plugin_prefix }}_create(const clap_host_t *host);
+
+extern clap_process_status {{ plugin_prefix }}_process(const struct clap_plugin *plugin, const clap_process_t *process);
+
+{% for ext in plugin_extensions %}
+extern const clap_plugin_{{ ext.extension_id | replace(ext_pre, "", 1) | to_snake }}_t s_{{ plugin_prefix }}_{{ ext.extension_id | replace(ext_pre, "", 1) | to_snake }};
+{%- endfor %}
+
+

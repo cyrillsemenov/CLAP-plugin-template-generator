@@ -1,4 +1,3 @@
-// #include "parser.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -15,9 +14,10 @@
 #define BLOCK_OPEN '{'
 #define BLOCK_CLOSE '}'
 #define COMMENT "// "
-#define EXT_DECL "static CLAP_CONSTEXPR const char "
+#define CONSTEXPR "static CLAP_CONSTEXPR const char "
+#define PORT_PREFIX "CLAP_PORT_"
 #define EXT_PREFIX "CLAP_EXT_"
-#define EXT_DELIM "[] = "
+#define CONSTEXPR_DELIM "[] = "
 
 #define ENUM_DATA 0
 #define ENUM_ENTRY 1
@@ -70,6 +70,8 @@ static enum_data_t *plugin_extensions_enum = NULL;
 static enum_entry_t *last_plugin_extensions_entry = NULL;
 static enum_data_t *host_extensions_enum = NULL;
 static enum_entry_t *last_host_extensions_entry = NULL;
+static enum_data_t *port_types_enum = NULL;
+static enum_entry_t *last_port_types_entry = NULL;
 
 char *construct_name_from_path(const char *path);
 static inline enum_data_t *enum_data_init(const char *name, const char *path,
@@ -123,22 +125,30 @@ int main(int argc, char *argv[]) {
                 if (!host_extensions_enum)
                     host_extensions_enum = enum_data_init(
                         "clap_host_extensions", NULL, "CLAP host extensions\n");
+                if (!port_types_enum)
+                    port_types_enum =
+                        enum_data_init("clap_audio_port_type", NULL,
+                                       "CLAP audio port types\n");
                 parse_extensions(argv[i]);
                 break;
         }
     }
 
-    if (opt == 2 && plugin_extensions_enum) {
-        print_enum(plugin_extensions_enum, MIN_MEMBERS);
-        enum_data_destroy(plugin_extensions_enum);
-    }
-    if (opt == 2 && host_extensions_enum) {
-        print_enum(host_extensions_enum, MIN_MEMBERS);
-        enum_data_destroy(host_extensions_enum);
+    if (opt == 2) {
+        if (port_types_enum) {
+            print_enum(port_types_enum, MIN_MEMBERS);
+            enum_data_destroy(port_types_enum);
+        }
+        if (plugin_extensions_enum) {
+            print_enum(plugin_extensions_enum, MIN_MEMBERS);
+            enum_data_destroy(plugin_extensions_enum);
+        }
+        if (host_extensions_enum) {
+            print_enum(host_extensions_enum, MIN_MEMBERS);
+            enum_data_destroy(host_extensions_enum);
+        }
     }
 
-    // print_out(argv[0]);
-    // print_out(enums, MIN_MEMBERS);
     return 0;
 }
 
@@ -196,7 +206,7 @@ void parse_enum(char *path) {
             ptr = enum_name_end;
             TRIM_SPACE(ptr);
 
-            char comment[1024] = "";
+            char comment[UINT16_MAX] = "";
             sprintf(comment, "File: %s\n", path);
 
             if (strlen(comment_buffer)) {
@@ -479,32 +489,26 @@ void parse_extensions(char *path) {
         }
 
         // Check line length
-        if (*ptr != EXT_DECL[0] || strlen(ptr) <= strlen(EXT_DECL)) {
+        if (*ptr != CONSTEXPR[0] || strlen(ptr) <= strlen(CONSTEXPR)) {
             comment_buffer[0] = '\0';
             continue;
         }
 
         // Start declaration parsing
-        if (strncmp(ptr, EXT_DECL, strlen(EXT_DECL)) != 0) {
+        if (strncmp(ptr, CONSTEXPR, strlen(CONSTEXPR)) != 0) {
             comment_buffer[0] = '\0';
             continue;
         }
-        ptr += strlen(EXT_DECL);
+        ptr += strlen(CONSTEXPR);
         char *entry_name = ptr;
 
-        // Filter declarations other than with EXT_PREFIX
-        if (strncmp(ptr, EXT_PREFIX, strlen(EXT_PREFIX)) != 0) {
-            comment_buffer[0] = '\0';
-            continue;
-        }
-
-        char *val = strstr(ptr, EXT_DELIM);
+        char *val = strstr(ptr, CONSTEXPR_DELIM);
         if (!val) {
             comment_buffer[0] = '\0';
             continue;
         }
         val[0] = '\0';
-        val += strlen(EXT_DELIM);
+        val += strlen(CONSTEXPR_DELIM);
 
         char *semicolon = strchr(val, ';');
         if (semicolon)
@@ -518,17 +522,32 @@ void parse_extensions(char *path) {
             strcat(comment, "\n");
             strcat(comment, comment_buffer);
         }
-
         comment_buffer[0] = '\0';
-        enum_entry_t *new_entry = enum_entry_init(entry_name, val, comment);
 
-        if (file_extensions_head) {
-            file_extensions_head->next = new_entry;
-        } else {
-            file_extensions = new_entry;
+        // Process extension port types
+        if (strncmp(ptr, PORT_PREFIX, strlen(PORT_PREFIX)) == 0) {
+            enum_entry_t *new_entry = enum_entry_init(entry_name, val, comment);
+            if (last_port_types_entry) {
+                last_port_types_entry->next = new_entry;
+            } else {
+                port_types_enum->entries = new_entry;
+            }
+            last_port_types_entry = new_entry;
+            port_types_enum->entries_num++;
         }
-        file_extensions_head = new_entry;
-        extensions_num++;
+
+        // Process extension declarations
+        if (strncmp(ptr, EXT_PREFIX, strlen(EXT_PREFIX)) == 0) {
+            enum_entry_t *new_entry = enum_entry_init(entry_name, val, comment);
+
+            if (file_extensions_head) {
+                file_extensions_head->next = new_entry;
+            } else {
+                file_extensions = new_entry;
+            }
+            file_extensions_head = new_entry;
+            extensions_num++;
+        }
     }
     fclose(file);
     if (!file_extensions)

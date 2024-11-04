@@ -1,0 +1,51 @@
+{%- from "macros.c.j2" import generate_enum, get_total, get_enum_name  with context -%}
+
+{%- set input_ports = "input_note_ports" -%}
+{%- set output_ports = "output_note_ports" -%}
+{%- set note_ports = plugin_extensions | selectattr("extension_id", "equalto", "CLAP_EXT_NOTE_PORTS") | first -%}
+
+{% macro generate_static_list(list_name, items) -%}
+{{ generate_enum(list_name | to_camel , items) }}
+
+static const clap_note_port_info_t {{ plugin_prefix }}_{{ list_name }}[] = {
+    {%- for item in items%}
+    {
+        .id = {{ get_enum_name(item.name) }},
+        .name = "{{ item.name }}",
+        .supported_dialects = {{ item.supported_dialects | join(' | ') }},
+        .preferred_dialect = {{ item.preferred_dialect }}
+    },
+    {%- endfor %}
+};
+{%- endmacro -%}
+////////////////////////////
+// clap_plugin_note_ports //
+////////////////////////////
+#include "../plugin.h"
+
+{{ generate_static_list(input_ports, note_ports.input) }}
+
+{{ generate_static_list(output_ports, note_ports.output) }}
+
+static uint32_t {{ plugin_prefix }}_note_ports_count(const clap_plugin_t *plugin, bool is_input) {
+    (void)plugin;
+    return is_input ? {{ get_total(input_ports) }} : {{ get_total(output_ports) }};
+}
+
+static bool {{ plugin_prefix }}_note_ports_get(const clap_plugin_t *plugin,
+                                               uint32_t index,
+                                               bool is_input,
+                                               clap_note_port_info_t *info) {
+    if (index >= {{ plugin_prefix }}_note_ports_count(plugin, is_input))
+        return false;
+    
+    *info = is_input ? {{ plugin_prefix }}_input_note_ports[index] : {{ plugin_prefix }}_output_note_ports[index];
+    return true;
+}
+
+const clap_plugin_note_ports_t s_{{ plugin_prefix }}_note_ports = {
+    .count = {{ plugin_prefix }}_note_ports_count,
+    .get = {{ plugin_prefix }}_note_ports_get,
+};
+
+
